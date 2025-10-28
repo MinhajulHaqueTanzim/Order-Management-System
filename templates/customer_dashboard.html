@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - OMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.5em;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .product-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .product-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            font-size: 1.5em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stock-info {
+            color: #28a745;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .stock-info.low {
+            color: #ffc107;
+        }
+
+        .stock-info.out {
+            color: #dc3545;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .quantity-selector input {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .orders-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .status-shipped {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-delivered {
+            background: #d1e7dd;
+            color: #0a3622;
+        }
+
+        .status-canceled {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .cart-items {
+            list-style: none;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .cart-total {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            text-align: right;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            min-height: 100px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Customer Dashboard</h1>
+        <div class="navbar-right">
+            <span id="userName">Welcome!</span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('products')">Browse Products</button>
+            <button class="tab" onclick="switchTab('cart')">My Cart (<span id="cartCount">0</span>)</button>
+            <button class="tab" onclick="switchTab('orders')">My Orders</button>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="products" class="tab-content active">
+            <div class="card">
+                <h2>Available Products</h2>
+                <div id="productsGrid" class="products-grid"></div>
+            </div>
+        </div>
+
+        <!-- Cart Tab -->
+        <div id="cart" class="tab-content">
+            <div class="card">
+                <h2>Shopping Cart</h2>
+                <div id="cartAlert"></div>
+                <ul id="cartItems" class="cart-items"></ul>
+                <div class="cart-total">Total: ৳<span id="cartTotal">0.00</span></div>
+                
+                <div class="form-group">
+                    <label for="shippingAddress">Shipping Address *</label>
+                    <textarea id="shippingAddress" required></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="placeOrder()" style="width: 100%;">
+                    Place Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders" class="tab-content">
+            <div class="card">
+                <h2>Order History</h2>
+                <div id="ordersContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        let products = [];
+        let user = null;
+
+        // Check authentication
+        window.onload = async () => {
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                window.location.href = '/customer-login/';
+                return;
+            }
+            
+            user = JSON.parse(userData);
+            document.getElementById('userName').textContent = `Welcome, ${user.name}!`;
+            
+            await loadProducts();
+            await loadOrders();
+        };
+
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'cart') {
+                renderCart();
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products/');
+                products = await response.json();
+                renderProducts();
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><p>No products available</p></div>';
+                return;
+            }
+            
+            grid.innerHTML = products.map(product => `
+                <div class="product-card">
+                    <img src="${product.image_url || 'https://via.placeholder.com/400x400.png?text=No+Image'}" 
+                        style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;"
+                        onerror="this.src='https://via.placeholder.com/400x400.png?text=No+Image'">
+
+                    <h3>${product.name}</h3>
+                    <p>${product.description || 'No description'}</p>
+                    <div class="price">৳${product.price.toFixed(2)}</div>
+                    <div class="stock-info ${product.stock < 10 ? 'low' : ''} ${product.stock === 0 ? 'out' : ''}">
+                        ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                    </div>
+                    ${product.stock > 0 ? `
+                        <div class="quantity-selector">
+                            <label>Qty:</label>
+                            <input type="number" id="qty-${product._id}" value="1" min="1" max="${product.stock}">
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;" onclick="addToCart('${product._id}')">
+                            Add to Cart
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p._id === productId);
+            const qtyInput = document.getElementById(`qty-${productId}`);
+            const quantity = parseInt(qtyInput.value);
+            
+            const existingItem = cart.find(item => item.product_id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    product_id: productId,
+                    product_name: product.name,
+                    price: product.price,
+                    quantity: quantity
+                });
+            }
+            
+            updateCartCount();
+            alert('Product added to cart!');
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = count;
+        }
+
+        function renderCart() {
+            const cartItemsEl = document.getElementById('cartItems');
+            const cartTotalEl = document.getElementById('cartTotal');
+            
+            if (cart.length === 0) {
+                cartItemsEl.innerHTML = '<div class="empty-state"><p>Your cart is empty</p></div>';
+                cartTotalEl.textContent = '0.00';
+                return;
+            }
+            
+            cartItemsEl.innerHTML = cart.map((item, index) => `
+                <li class="cart-item">
+                    <div>
+                        <strong>${item.product_name}</strong><br>
+                        ৳${item.price.toFixed(2)} × ${item.quantity} = ৳${(item.price * item.quantity).toFixed(2)}
+                    </div>
+                    <button class="btn btn-danger" onclick="removeFromCart(${index})">Remove</button>
+                </li>
+            `).join('');
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotalEl.textContent = total.toFixed(2);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+            renderCart();
+        }
+
+        async function placeOrder() {
+            if (cart.length === 0) {
+                showAlert('cartAlert', 'Your cart is empty', 'error');
+                return;
+            }
+            
+            const shippingAddress = document.getElementById('shippingAddress').value;
+            if (!shippingAddress.trim()) {
+                showAlert('cartAlert', 'Please enter a shipping address', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/orders/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        items: cart,
+                        shipping_address: shippingAddress
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const orderId = data.order_id;
+                    
+                    // Ask user if they want to pay now
+                    if (confirm('Order placed successfully! Do you want to pay now using SSLCommerz?')) {
+                        // Initiate payment
+                        const paymentResponse = await fetch('/api/payment/initiate/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                order_id: orderId
+                            })
+                        });
+                        
+                        const paymentData = await paymentResponse.json();
+                        
+                        if (paymentResponse.ok) {
+                            // Redirect to SSLCommerz payment gateway
+                            window.location.href = paymentData.gateway_url;
+                        } else {
+                            showAlert('cartAlert', paymentData.error, 'error');
+                        }
+                    } else {
+                        // Clear cart and show success
+                        showAlert('cartAlert', 'Order placed successfully! You can pay later.', 'success');
+                        cart = [];
+                        updateCartCount();
+                        renderCart();
+                        document.getElementById('shippingAddress').value = '';
+                        await loadOrders();
+                        setTimeout(() => {
+                            document.querySelector('.tab[onclick*="orders"]').click();
+                        }, 1500);
+                    }
+                } else {
+                    showAlert('cartAlert', data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('cartAlert', 'Error placing order', 'error');
+            }
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders/');
+                const orders = await response.json();
+                renderOrders(orders);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        function renderOrders(orders) {
+            const ordersContent = document.getElementById('ordersContent');
+            
+            if (orders.length === 0) {
+                ordersContent.innerHTML = '<div class="empty-state"><p>You haven\'t placed any orders yet</p></div>';
+                return;
+            }
+            
+            ordersContent.innerHTML = `
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map(order => `
+                            <tr>
+                                <td>#${order._id.substr(-6)}</td>
+                                <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                                <td>${order.items.length} item(s)</td>
+                                <td>৳${order.total_amount.toFixed(2)}</td>
+                                <td>
+                                    ${order.payment_status === 'paid' ? 
+                                        '<span class="status-badge status-delivered">Paid</span>' : 
+                                        '<span class="status-badge status-pending">Unpaid</span>'
+                                    }
+                                </td>
+                                <td><span class="status-badge status-${order.status}">${order.status}</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-secondary" onclick="viewOrderDetails('${order._id}')">
+                                            View Details
+                                        </button>
+                                        ${order.payment_status !== 'paid' && order.status !== 'canceled' ? 
+                                            `<button class="btn btn-success" onclick="payNow('${order._id}')">
+                                                Pay Now
+                                            </button>` : ''
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function viewOrderDetails(orderId) {
+            try {
+                const response = await fetch(`/api/orders/${orderId}/`);
+                const order = await response.json();
+                
+                const items = order.items.map(item => 
+                    `${item.product_name} (${item.quantity}x) - ৳${item.subtotal.toFixed(2)}`
+                ).join('\n');
+                
+                const paymentStatus = order.payment_status === 'paid' ? 'Paid' : 'Unpaid';
+                
+                alert(`Order Details:\n\n${items}\n\nTotal: ৳${order.total_amount.toFixed(2)}\nPayment Status: ${paymentStatus}\nOrder Status: ${order.status}\nShipping: ${order.shipping_address}`);
+            } catch (error) {
+                alert('Error loading order details');
+            }
+        }
+
+        async function payNow(orderId) {
+            try {
+                const response = await fetch('/api/payment/initiate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Redirect to SSLCommerz payment gateway
+                    window.location.href = data.gateway_url;
+                } else {
+                    alert(data.error || 'Error initiating payment');
+                }
+            } catch (error) {
+                alert('Error initiating payment');
+            }
+        }
+
+        function showAlert(elementId, message, type) {
+            const alertEl = document.getElementById(elementId);
+            alertEl.className = `alert alert-${type}`;
+            alertEl.textContent = message;
+            alertEl.style.display = 'block';
+            
+            setTimeout(() => {
+                alertEl.style.display = 'none';
+            }, 5000);
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/logout/', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
